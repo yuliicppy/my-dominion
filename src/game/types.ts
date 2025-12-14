@@ -1,7 +1,7 @@
 // カード・ゲーム状態の型定義
 
 // カードタイプの定義
-type CardType = "Action" | "Treasure" | "Victory" | "Attack" | "Reaction";
+type CardType = "Action" | "Treasure" | "Victory" | "Attack" | "Reaction" | "Curse";
 
 // 効果発動条件の定義
 type Condition =
@@ -47,6 +47,12 @@ export type Card = {
   description?: string; // カードの効果説明
 
   effects: EffectDef[]; // 効果定義
+
+  // 追加: 収録拡張パック名（例: 'Base', 'Intrigue' など）
+  expansion: string;
+
+  // 追加: 基本サプライか（銅貨/銀貨/金貨/勝利/呪い）
+  isBasicSupply: boolean;
 };
 
 export type GameState = {

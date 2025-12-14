@@ -1,7 +1,8 @@
 // ゲームエンジンの基本ロジック
 
 import { GameState, Card } from './types';
-import { sampleCards } from './cardData';
+import { cardMaster } from './cardData';
+import { requireCard } from './utils';
 
 function shuffle<T>(arr: T[]) {
   for (let i = arr.length - 1; i > 0; i--) {
@@ -11,8 +12,11 @@ function shuffle<T>(arr: T[]) {
 }
 
 export function createInitialState(): GameState {
-  // sampleCards を複製してデッキにする
-  const deck = [...sampleCards, ...sampleCards];
+  // 初期デッキ: 銅貨7枚・屋敷3枚（ドミニオン第2版の初期デッキ構成）
+  const copper = requireCard(cardMaster, 'copper');
+  const estate = requireCard(cardMaster, 'estate');
+
+  const deck: Card[] = [...Array(7)].map(() => copper).concat([...Array(3)].map(() => estate));
   shuffle(deck);
 
   // シャッフル後、上から5枚を手札に取り、残りをデッキにする

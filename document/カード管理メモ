@@ -1,0 +1,171 @@
+ボードゲームのドミニオンをブラウザ上で遊べるようなものをReactで作っています。カードのデータを管理するときにID, カード名、種類、テキスト説明、効果 などの情報を持たせようかと思っていますが、構造的にどうすればいいなどの指針はありますか？
+
+はい、あります。
+ポイントは 「表示用データ」と「挙動（ルール・効果）」を分離すること、そして 将来の拡張（カード追加・拡張セット・効果の複雑化）に耐えられる構造にしておくことです。
+
+以下、React＋ドミニオン前提での 実践的な設計指針を段階的にまとめます。
+
+① 大原則：カードは「データ」、効果は「ロジック」
+
+カードデータに関数を直接持たせないのが基本です。
+
+❌ よくあるが後で辛くなる例
+
+{
+  id: "village",
+  name: "村",
+  effect: (state) => { ... } // ← NGになりがち
+}
+
+
+理由：
+
+シリアライズできない
+
+テストしづらい
+
+効果の組み合わせが地獄
+
+拡張カードで破綻しやすい
+
+👉 「効果ID」や「効果定義」を参照する形にします。
+
+② カードデータの基本構造（おすすめ）
+type CardType = "Action" | "Treasure" | "Victory" | "Attack" | "Reaction";
+
+type Card = {
+  id: string;                 // 内部ID（不変）
+  name: string;               // 表示名
+  cost: number;
+  types: CardType[];
+  description: string;        // 表示用テキスト
+
+  effects: EffectDef[];       // 効果定義（後述）
+};
+
+例：村（Village）
+{
+  id: "village",
+  name: "村",
+  cost: 3,
+  types: ["Action"],
+  description: "+1 カード、+2 アクション",
+  effects: [
+    { kind: "DrawCards", amount: 1 },
+    { kind: "AddActions", amount: 2 },
+  ],
+}
+
+③ 効果は「小さなプリミティブ」に分解する
+
+ドミニオンの強みは、効果が 原子的 なことです。
+
+効果定義（EffectDef）
+type EffectDef =
+  | { kind: "DrawCards"; amount: number }
+  | { kind: "AddActions"; amount: number }
+  | { kind: "AddBuys"; amount: number }
+  | { kind: "AddCoins"; amount: number }
+  | { kind: "GainCard"; maxCost: number; destination: "discard" | "hand" }
+  | { kind: "TrashCard"; from: "hand" };
+
+
+→ if文の塊ではなく、宣言的なデータにするのが重要です。
+
+④ 効果実行エンジンを1か所に集約する
+function resolveEffect(
+  effect: EffectDef,
+  state: GameState,
+  ctx: EffectContext
+): GameState {
+  switch (effect.kind) {
+    case "DrawCards":
+      return drawCards(state, effect.amount);
+    case "AddActions":
+      return addActions(state, effect.amount);
+    case "GainCard":
+      return gainCard(state, effect.maxCost, effect.destination);
+    // ...
+  }
+}
+
+
+カード側は 「何をするか」だけ
+ゲームエンジン側が 「どうやってやるか」 を担当します。
+
+⑤ 選択を伴うカード（鍛冶屋・礼拝堂など）
+
+「選ぶ」行為は EffectContext に切り出します。
+
+type EffectContext = {
+  chooseCardFromHand: (filter) => Promise<CardId>;
+};
+
+{
+  id: "chapel",
+  name: "礼拝堂",
+  effects: [
+    { kind: "TrashUpTo", max: 4 }
+  ]
+}
+
+
+→ UI（React）とルールを分離できる
+→ 将来 AI プレイヤーも作れる
+
+⑥ カードIDは絶対に文字列で固定
+id: "smithy" // 表示名と分離
+
+
+理由：
+
+多言語対応
+
+表示名変更しても影響なし
+
+セーブデータ互換性
+
+⑦ React 側の責務を最小化する
+
+Reactは 状態を描画するだけ に近づける。
+
+<CardView card={card} onClick={() => playCard(card.id)} />
+
+
+ルール判定はすべて game engine 側
+
+「押せる／押せない」も state から導出
+
+⑧ 最初は「基本セットだけ」で十分
+
+最初から全部対応しようとしない方がいいです。
+
+最初の目標
+
+村 / 鍛冶屋 / 市場 / 金貨 / 属州
+
+選択なし or 単純な選択のみ
+
+👉 この構造なら拡張セットも無理なく足せます。
+
+⑨ 将来の拡張を見据えた設計チェックリスト
+
+ カード定義は JSON に切り出せる？
+
+ 効果の組み合わせは配列で表現できる？
+
+ UIを変えずにカードを追加できる？
+
+ 効果実行ロジックは1か所か？
+
+これが全部 YES なら、かなり良い設計です。
+
+まとめ（設計の軸）
+
+カード = 宣言的データ
+
+効果 = 小さなプリミティブ
+
+ルール = 中央集権的エンジン
+
+UI = 状態の投影
