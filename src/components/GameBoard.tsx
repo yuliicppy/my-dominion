@@ -6,7 +6,9 @@ import Card from './Card';
 import './GameBoard.css';
 
 export default function GameBoard() {
-  const { state, drawCards, startTurn, endTurn, playAction, playTreasure, buyCard } = useGame();
+  const { state, drawCards, startTurn, endTurn, playAction, playTreasure, playAllTreasures, buyCard } = useGame();
+
+  const canPlayAllTreasures = state.hand.some(c => c.types.includes('Treasure')) && (state.phase === 'action' || state.phase === 'buy');
 
   return (
     <div className="gameboard-root">
@@ -24,6 +26,11 @@ export default function GameBoard() {
 
       <h3>Hand</h3>
       <div className="hand-area">
+        <div className="hand-actions">
+          <button className="action-btn" onClick={() => playAllTreasures()} disabled={!canPlayAllTreasures}>
+            財宝を一括プレー
+          </button>
+        </div>
         {state.hand.map((c, i) => {
           const isTreasure = c.types.includes('Treasure');
           const canPlay = isTreasure && (state.phase === 'action' || state.phase === 'buy');

@@ -33,12 +33,13 @@ export function useGame() {
 
   function endTurn() {
     setState(prev => {
-      // クリーンアップ: 手札を捨て札へ
+      // クリーンアップ: 手札とプレーした財宝を捨て札へ
       const next = {
         ...prev,
         deck: [...prev.deck],
         hand: [],
-        discard: [...prev.discard, ...prev.hand],
+        discard: [...prev.discard, ...prev.hand, ...prev.inPlayTreasure],
+        inPlayTreasure: [],
       };
 
       // cleanupフェーズ表示
@@ -135,5 +136,21 @@ export function useGame() {
     });
   }
 
-  return { state, drawCards, startTurn, endTurn, playAction, playTreasure, buyCard };
+  function playAllTreasures() {
+    setState(prev => {
+      if(prev.phase !== 'action' && prev.phase !== 'buy') return prev;
+
+      const treasures = prev.hand.filter(c => c.types.includes('Treasure'));
+      if(treasures.length === 0) return prev;
+
+      const next = { ...prev };
+      next.hand = prev.hand.filter(c => !c.types.includes('Treasure'));
+      next.inPlayTreasure = [...prev.inPlayTreasure, ...treasures];
+      next.coins = prev.coins + treasures.reduce((sum, c) => sum + (c.value ?? 0), 0);
+      next.phase = 'buy';
+      return next;
+    });
+  }
+
+  return { state, drawCards, startTurn, endTurn, playAction, playTreasure, playAllTreasures, buyCard };
 }

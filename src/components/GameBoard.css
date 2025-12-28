@@ -20,6 +20,10 @@
   gap: 8px;
 }
 
+.hand-actions {
+  margin-bottom: 8px;
+}
+
 .hand-card {
   display: flex;
   flex-direction: column;
