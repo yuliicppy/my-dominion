@@ -68,5 +68,72 @@ export function useGame() {
     });
   }
 
-  return { state, drawCards, startTurn, endTurn, playAction };
+  function playTreasure(cardId: string) {
+    setState(prev => {
+      if(prev.phase !== 'action' && prev.phase !== 'buy') return prev;
+
+      const handIdx = prev.hand.findIndex(c => c.id === cardId);
+      if(handIdx === -1) return prev;
+      const card = prev.hand[handIdx];
+
+      // Treasureカードでなければ無視
+      if(!card.types.includes('Treasure')) return prev;
+
+      const next = { ...prev };
+      next.hand = [...prev.hand];
+      next.inPlayTreasure = [...prev.inPlayTreasure];
+
+      next.hand.splice(handIdx, 1);
+      next.inPlayTreasure.push(card);
+
+      // コインを加算
+      next.coins = prev.coins + (card.value ?? 0);
+
+      // フェーズがactionならbuyに進める
+      next.phase = 'buy';
+
+      return next;
+    }
+
+    );
+  }
+
+  function buyCard(pile: 'basic' | 'kingdom', index: number) {
+    setState(prev => {
+      // フェーズ、リソースチェック
+      if (prev.phase !== 'buy') return prev;
+      if(prev.buys <= 0) return prev;
+
+      const pileArr = prev.supply[pile];
+      if(index < 0 || index >= pileArr.length) return prev;
+
+      const targetPile = pileArr[index];
+      if(targetPile.count <= 0) return prev;
+
+      const card = targetPile.card;
+      if(prev.coins < card.cost) return prev;
+
+      // 購入処理
+      const next = { ...prev };
+      next.supply = {
+        ...prev.supply,
+        [pile]: [...pileArr],
+      };
+
+      // サプライ残数を1減らす
+      next.supply[pile][index] = { ...targetPile, count: targetPile.count - 1};
+
+      // コインと購入回数を消費
+      next.coins = prev.coins - card.cost;
+      next.buys = prev.buys - 1;
+
+      // 購入したカードを捨て札へ
+      next.discard = [...prev.discard, card];
+
+      return next;
+
+    });
+  }
+
+  return { state, drawCards, startTurn, endTurn, playAction, playTreasure, buyCard };
 }

@@ -1,6 +1,7 @@
 // ゲームエンジンの基本ロジック
 
 import { GameState, Card } from './types';
+import { createSupply } from './supply';
 import { cardMaster } from './cardData';
 import { requireCard } from './utils';
 
@@ -26,6 +27,8 @@ export function createInitialState(): GameState {
     deck, // 残りのカード
     hand,
     discard: [],
+    inPlayTreasure: [],
+    supply: createSupply(cardMaster),
     turn: 1,
     // 初期のアクション管理
     actions: 1,

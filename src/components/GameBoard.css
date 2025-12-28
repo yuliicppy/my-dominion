@@ -1,0 +1,108 @@
+.gameboard-root {
+  padding: 16px;
+}
+
+.gameboard-title {
+  margin-bottom: 12px;
+}
+
+.controls-row {
+  margin-bottom: 8px;
+}
+
+.status-row {
+  margin: 4px 0;
+}
+
+.hand-area {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hand-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.action-btn {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.empty-text {
+  color: #666;
+}
+
+.supply-section {
+  margin-top: 24px;
+  padding: 12px 0;
+  border-top: 2px solid #ddd;
+}
+
+.supply-block {
+  margin-top: 12px;
+}
+
+.supply-grid {
+  display: grid;
+  gap: 12px;
+  align-items: flex-start;
+  margin-top: 8px;
+}
+
+.supply-grid.basic {
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+}
+
+.supply-grid.kingdom {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.supply-pile {
+  text-align: center;
+  position: relative;
+}
+
+.supply-pile.empty {
+  border: 1px dashed #ddd;
+  border-radius: 8px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+}
+
+.pile-count {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  background: #eef3ff;
+  color: #0f2f7f;
+  border: 1px solid #c2d2ff;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.pile-cost {
+  font-size: 12px;
+  color: #555;
+  margin-top: 4px;
+}
+
+.debug-section {
+  margin-top: 24px;
+  padding: 12px 0;
+  border-top: 1px solid #ddd;
+}
+
+.deck-grid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}

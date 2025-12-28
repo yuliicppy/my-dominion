@@ -44,6 +44,7 @@ export type Card = {
   name: string; // 表示用カード名
   types: CardType[];
   cost: number;
+  value?: number; // 財宝が生むコイン値
   description?: string; // カードの効果説明
 
   effects: EffectDef[]; // 効果定義
@@ -55,10 +56,14 @@ export type Card = {
   isBasicSupply: boolean;
 };
 
+import { SupplyPile } from './supply';
+
 export type GameState = {
   deck: Card[]; // 山札
   hand: Card[]; // 手札
   discard: Card[]; // 捨て札
+  inPlayTreasure: Card[]; // プレーしたカード(財宝)
+  supply: { basic: SupplyPile[]; kingdom: SupplyPile[]}; // サプライ
 
   turn: number; // 現在のターン数
 

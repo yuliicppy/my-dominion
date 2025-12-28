@@ -3,9 +3,9 @@ import { Card } from './types';
 
 export const cardMaster: Card[] = [
   // 基本財宝（Base, 基本サプライ）
-  { id: 'copper', name: '銅貨', types: ['Treasure'], cost: 0, description: 'コイン+1', effects: [], expansion: 'Base', isBasicSupply: true },
-  { id: 'silver', name: '銀貨', types: ['Treasure'], cost: 3, description: 'コイン+2', effects: [], expansion: 'Base', isBasicSupply: true },
-  { id: 'gold', name: '金貨', types: ['Treasure'], cost: 6, description: 'コイン+3', effects: [], expansion: 'Base', isBasicSupply: true },
+  { id: 'copper', name: '銅貨', types: ['Treasure'], cost: 0, value: 1, description: 'コイン+1', effects: [], expansion: 'Base', isBasicSupply: true },
+  { id: 'silver', name: '銀貨', types: ['Treasure'], cost: 3, value: 2, description: 'コイン+2', effects: [], expansion: 'Base', isBasicSupply: true },
+  { id: 'gold', name: '金貨', types: ['Treasure'], cost: 6, value: 3, description: 'コイン+3', effects: [], expansion: 'Base', isBasicSupply: true },
 
   // 基本勝利点 / 呪い（Base, 基本サプライ）
   { id: 'estate', name: '屋敷', types: ['Victory'], cost: 2, description: '勝利点1', effects: [], expansion: 'Base', isBasicSupply: true },
