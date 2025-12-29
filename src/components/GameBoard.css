@@ -153,6 +153,64 @@
   color: #666;
 }
 
+.hand-area .empty-text {
+  grid-column: 1 / -1;
+  text-align: center;
+  white-space: nowrap;
+  padding: 6px 0;
+}
+
+.panel-subheader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 4px 0 6px;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.panel-subheader h4 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.pill-count {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eef3ff;
+  color: #0f2f7f;
+  border: 1px solid #c2d2ff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.played-area {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #e3e8f3;
+}
+
+.played-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 6px;
+  min-height: 64px;
+}
+
+.played-card {
+  display: flex;
+  justify-content: center;
+}
+
+.played-grid .empty-text {
+  grid-column: 1 / -1;
+  text-align: center;
+  white-space: nowrap;
+  padding: 6px 0;
+}
+
 .supply-section {
   margin-top: 0;
   padding: 0;

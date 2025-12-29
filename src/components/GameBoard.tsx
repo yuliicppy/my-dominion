@@ -23,9 +23,6 @@ export default function GameBoard() {
           </div>
         </div>
         <div className="controls-row">
-          <button onClick={() => startTurn()}>Start Turn</button>
-          <button onClick={() => playAction()}>Play Action</button>
-          <button onClick={() => drawCards(1)}>Draw 1</button>
           <button onClick={() => endTurn()}>End Turn</button>
           <button onClick={() => setShowDebug(v => !v)}>
             {showDebug ? 'デバッグを隠す' : 'デバッグを表示'}
@@ -59,6 +56,23 @@ export default function GameBoard() {
               );
             })}
             {state.hand.length === 0 && <div className="empty-text">No cards in hand</div>}
+          </div>
+          <div className="played-area">
+            <div className="panel-subheader">
+              <h4>Played</h4>
+              <span className="pill-count">{state.inPlayTreasure.length} 枚</span>
+            </div>
+            <div className="played-grid">
+              {state.inPlayTreasure.map((c, i) => (
+                <div key={c.id + '-played-' + i} className="played-card">
+                  <Card card={c} size="small"></Card>
+                </div>
+              )
+              )}
+              {state.inPlayTreasure.length === 0 && (
+                <div className="empty-text">まだプレーされたカードはありません</div>
+              )}
+            </div>
           </div>
         </section>
 
