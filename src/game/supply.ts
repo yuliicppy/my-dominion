@@ -20,6 +20,10 @@ export function createSupply(cardPool: Card[]): { basic: SupplyPile[]; kingdom: 
     { card: requireCard(cardPool, 'copper'), count: 60 },
     { card: requireCard(cardPool, 'silver'), count: 40 },
     { card: requireCard(cardPool, 'gold'), count: 30 },
+    { card: requireCard(cardPool, 'estate'), count: 24 },
+    { card: requireCard(cardPool, 'duchy'), count: 12 },
+    { card: requireCard(cardPool, 'province'), count: 12 },
+    { card: requireCard(cardPool, 'curse'), count: 30 },
   ];
 
   // 王国カードの候補（財宝・勝利は除外）

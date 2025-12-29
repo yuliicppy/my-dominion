@@ -70,7 +70,6 @@ export default function GameBoard() {
 
           <div className="supply-scroll">
             <div className="supply-block">
-              <h4>基本サプライ</h4>
               <div className="supply-grid basic">
                 {state.supply.basic.map((p, i) => {
                   const affordable = state.coins >= p.card.cost && state.buys > 0 && state.phase === 'buy' && p.count > 0;
@@ -88,9 +87,9 @@ export default function GameBoard() {
               </div>
             </div>
 
-            <div className="supply-block">
-              <h4>王国カード（ランダム10種）</h4>
+            <div className="supply-divider" aria-hidden="true" />
 
+            <div className="supply-block">
               {/* 2行 x 5列 のグリッド */}
               <div className="supply-grid kingdom">
                 {Array.from({ length: 10 }).map((_, idx) => {
@@ -119,23 +118,21 @@ export default function GameBoard() {
           </div>
         </section>
 
-        {/* デバッグ用: 山札を画面本体とは別に表示（トグルで表示） */}
-        {showDebug && (
-          <aside className="debug-section panel">
-            <div className="panel-header">
-              <h3>デバッグ — 山札 (Deck)</h3>
-              <div className="deck-count">枚数: {state.deck.length}</div>
-            </div>
-            <div className="deck-grid">
-              {state.deck.length === 0 && <div className="empty-text">山札が空です</div>}
-              {state.deck.map((c, i) => (
-                <div key={c.id + '-' + i} title={`#${i + 1} ${c.name}`}>
-                  <Card card={c} size="small" />
-                </div>
-              ))}
-            </div>
-          </aside>
-        )}
+        {/* デバッグ用: サイドパネルとしてスライド表示 */}
+        <aside className={`debug-section panel ${showDebug ? 'is-open' : ''}`} aria-hidden={!showDebug}>
+          <div className="panel-header">
+            <h3>デバッグ — 山札 (Deck)</h3>
+            <div className="deck-count">枚数: {state.deck.length}</div>
+          </div>
+          <div className="deck-grid">
+            {state.deck.length === 0 && <div className="empty-text">山札が空です</div>}
+            {state.deck.map((c, i) => (
+              <div key={c.id + '-' + i} title={`#${i + 1} ${c.name}`}>
+                <Card card={c} size="small" />
+              </div>
+            ))}
+          </div>
+        </aside>
       </div>
     </div>
   );

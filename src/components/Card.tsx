@@ -1,7 +1,8 @@
 // カード表示コンポーネント
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Card as CardType } from '../game/types';
+import './Card.css';
 
 function pickColor(types?: string[]) {
   if (!types || types.length === 0) return { bg: '#f7f7f7', color: '#111' };
@@ -15,38 +16,78 @@ function pickColor(types?: string[]) {
 }
 
 export default function Card({ card, size = 'normal' }: { card: CardType; size?: 'normal' | 'small' }) {
+  const previewTimer = useRef<number | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewPos, setPreviewPos] = useState<{ x: number; y: number }>({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
   const isSmall = size === 'small';
   const { bg, color } = pickColor(Array.isArray(card.types) ? card.types : undefined);
 
-  const width = isSmall ? 110 : 150;
-  const height = isSmall ? 150 : 200;
-
-  const containerStyle: React.CSSProperties = {
-    width,
-    height,
-    borderRadius: 8,
-    padding: 10,
-    boxSizing: 'border-box',
-    background: bg,
-    color,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    border: '1px solid rgba(0,0,0,0.06)',
-    boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
-    overflow: 'hidden',
-  };
-
   const typeText = Array.isArray(card.types) ? card.types.join(', ') : (card as any).type ?? '';
   const desc = card.description ?? (card as any).text ?? '';
+  const containerClass = `card-container ${isSmall ? 'small' : 'normal'}`;
+  const nameLength = card.name.length;
+  const nameSize = isSmall ? (nameLength > 16 ? 10 : nameLength > 12 ? 11 : 12) : (nameLength > 20 ? 12 : nameLength > 14 ? 13 : 14);
+  const typeLength = typeText.length;
+  const typeSize = isSmall
+    ? (typeLength > 16 ? 9 : typeLength > 12 ? 10 : 11)
+    : (typeLength > 20 ? 10 : typeLength > 14 ? 11 : 12);
+
+  const handleEnter = () => {
+    const el = containerRef.current;
+    const area = el?.closest('.hand-panel') || el?.closest('.supply-section');
+    if (area) {
+      const rect = area.getBoundingClientRect();
+      setPreviewPos({
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+      });
+    } else {
+      setPreviewPos({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+    }
+    previewTimer.current = window.setTimeout(() => setShowPreview(true), 250);
+  };
+
+  const handleLeave = () => {
+    if (previewTimer.current) {
+      window.clearTimeout(previewTimer.current);
+      previewTimer.current = null;
+    }
+    setShowPreview(false);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (previewTimer.current) {
+        window.clearTimeout(previewTimer.current);
+      }
+    };
+  }, []);
 
   return (
-    <div style={containerStyle}>
-      <div>
-        <div style={{ fontWeight: 800, fontSize: isSmall ? 14 : 16, lineHeight: 1.1 }}>{card.name}</div>
-        <div style={{ fontSize: isSmall ? 11 : 12, color: 'rgba(0,0,0,0.6)', marginTop: 6 }}>{typeText} ・ コスト: {card.cost}</div>
+    <div
+      className={containerClass}
+      style={{ background: bg, color }}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+      ref={containerRef}
+    >
+      <div className="card-header">
+        <div className="card-name" style={{ fontSize: nameSize }}>{card.name}</div>
       </div>
-      {desc ? <div style={{ fontSize: isSmall ? 11 : 12, color: 'rgba(0,0,0,0.65)' }}>{desc}</div> : null}
+      <div className="card-cost-badge">{card.cost}</div>
+      <div className="card-meta" style={{ fontSize: typeSize }}>
+        {typeText}
+      </div>
+      <div
+        className={`card-preview ${showPreview ? 'visible' : ''}`}
+        aria-hidden={!showPreview}
+        style={{ background: bg, color, left: previewPos.x, top: previewPos.y }}
+      >
+        <div className="card-preview-name">{card.name}</div>
+        <div className="card-preview-meta">{typeText} ・ コスト: {card.cost}</div>
+        <div className="card-preview-desc">{desc || '説明なし'}</div>
+      </div>
     </div>
   );
 }
