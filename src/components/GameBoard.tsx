@@ -1,121 +1,142 @@
 // カードゲームのメインボードコンポーネント
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useGame } from '../hooks/useGame';
 import Card from './Card';
 import './GameBoard.css';
 
 export default function GameBoard() {
+  const [showDebug, setShowDebug] = useState(false);
   const { state, drawCards, startTurn, endTurn, playAction, playTreasure, playAllTreasures, buyCard } = useGame();
 
   const canPlayAllTreasures = state.hand.some(c => c.types.includes('Treasure')) && (state.phase === 'action' || state.phase === 'buy');
 
   return (
     <div className="gameboard-root">
-      <h2 className="gameboard-title">ゼロから作るDominion (single-player)</h2>
-      <div className="controls-row">
-        <button onClick={() => startTurn()}>Start Turn</button>{' '}
-        <button onClick={() => playAction()}>Play Action</button>{' '}
-        <button onClick={() => drawCards(1)}>Draw 1</button>{' '}
-        <button onClick={() => endTurn()}>End Turn</button>
-      </div>
-
-      <div className="status-row">Turn: {state.turn} | Phase: {state.phase}</div>
-      <div className="status-row">Actions: {state.actions} | Buys: {state.buys} | Coins: {state.coins}</div>
-      <div className="status-row">Deck: {state.deck.length} | Discard: {state.discard.length} | Hand: {state.hand.length}</div>
-
-      <h3>Hand</h3>
-      <div className="hand-area">
-        <div className="hand-actions">
-          <button className="action-btn" onClick={() => playAllTreasures()} disabled={!canPlayAllTreasures}>
-            財宝を一括プレー
+      <header className="top-bar">
+        <div className="title-block">
+          <h2 className="gameboard-title">ゼロから作るDominion (single-player)</h2>
+          <div className="status-grid">
+            <div className="status-row">Turn: {state.turn} | Phase: {state.phase}</div>
+            <div className="status-row">Actions: {state.actions} | Buys: {state.buys} | Coins: {state.coins}</div>
+            <div className="status-row">Deck: {state.deck.length} | Discard: {state.discard.length} | Hand: {state.hand.length}</div>
+          </div>
+        </div>
+        <div className="controls-row">
+          <button onClick={() => startTurn()}>Start Turn</button>
+          <button onClick={() => playAction()}>Play Action</button>
+          <button onClick={() => drawCards(1)}>Draw 1</button>
+          <button onClick={() => endTurn()}>End Turn</button>
+          <button onClick={() => setShowDebug(v => !v)}>
+            {showDebug ? 'デバッグを隠す' : 'デバッグを表示'}
           </button>
         </div>
-        {state.hand.map((c, i) => {
-          const isTreasure = c.types.includes('Treasure');
-          const canPlay = isTreasure && (state.phase === 'action' || state.phase === 'buy');
-          return (
-            <div key={c.id + '-' + i} className="hand-card">
-              <Card card={c} size="normal" />
-              <button
-                className="action-btn"
-                onClick={() => playTreasure(c.id)}
-                disabled={!canPlay}
-              >
-                財宝をプレー
-              </button>
+      </header>
+
+      <div className={`main-grid ${showDebug ? 'show-debug' : ''}`}>
+        <section className="hand-panel panel">
+          <div className="panel-header">
+            <h3>Hand</h3>
+            <button className="action-btn" onClick={() => playAllTreasures()} disabled={!canPlayAllTreasures}>
+              財宝を一括プレー
+            </button>
+          </div>
+          <div className="hand-area">
+            {state.hand.map((c, i) => {
+              const isTreasure = c.types.includes('Treasure');
+              const canPlay = isTreasure && (state.phase === 'action' || state.phase === 'buy');
+              return (
+                <div key={c.id + '-' + i} className="hand-card">
+                  <Card card={c} size="normal" />
+                  <button
+                    className="action-btn"
+                    onClick={() => playTreasure(c.id)}
+                    disabled={!canPlay}
+                  >
+                    財宝をプレー
+                  </button>
+                </div>
+              );
+            })}
+            {state.hand.length === 0 && <div className="empty-text">No cards in hand</div>}
+          </div>
+        </section>
+
+        {/* サプライ表示（メイン画面とは別） */}
+        <section className="supply-section panel">
+          <div className="panel-header">
+            <h3>サプライ</h3>
+          </div>
+
+          <div className="supply-scroll">
+            <div className="supply-block">
+              <h4>基本サプライ</h4>
+              <div className="supply-grid basic">
+                {state.supply.basic.map((p, i) => {
+                  const affordable = state.coins >= p.card.cost && state.buys > 0 && state.phase === 'buy' && p.count > 0;
+                  return (
+                    <div key={p.card.id + '-' + i} className="supply-pile">
+                      <Card card={p.card} size="small" />
+                      <div className="pile-cost">コスト: {p.card.cost}</div>
+                      <div className="pile-count">残り: {p.count}</div>
+                      <button className="action-btn" onClick={() => buyCard('basic', i)} disabled={!affordable}>
+                        購入
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          );
-        })}
-        {state.hand.length === 0 && <div className="empty-text">No cards in hand</div>}
+
+            <div className="supply-block">
+              <h4>王国カード（ランダム10種）</h4>
+
+              {/* 2行 x 5列 のグリッド */}
+              <div className="supply-grid kingdom">
+                {Array.from({ length: 10 }).map((_, idx) => {
+                  const pile = state.supply.kingdom[idx];
+                  if (!pile || !pile.card) {
+                    return (
+                      <div key={`empty-${idx}`} className="supply-pile empty">
+                        未選択
+                      </div>
+                    );
+                  }
+                  const affordable = state.coins >= pile.card.cost && state.buys > 0 && state.phase === 'buy' && pile.count > 0;
+                  return (
+                    <div key={pile.card.id + '-' + idx} className="supply-pile" title={`山札 #${idx + 1}`}>
+                      <Card card={pile.card} size="small" />
+                      <div className="pile-cost">コスト: {pile.card.cost}</div>
+                      <div className="pile-count">残り: {pile.count}</div>
+                      <button className="action-btn" onClick={() => buyCard('kingdom', idx)} disabled={!affordable}>
+                        購入
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* デバッグ用: 山札を画面本体とは別に表示（トグルで表示） */}
+        {showDebug && (
+          <aside className="debug-section panel">
+            <div className="panel-header">
+              <h3>デバッグ — 山札 (Deck)</h3>
+              <div className="deck-count">枚数: {state.deck.length}</div>
+            </div>
+            <div className="deck-grid">
+              {state.deck.length === 0 && <div className="empty-text">山札が空です</div>}
+              {state.deck.map((c, i) => (
+                <div key={c.id + '-' + i} title={`#${i + 1} ${c.name}`}>
+                  <Card card={c} size="small" />
+                </div>
+              ))}
+            </div>
+          </aside>
+        )}
       </div>
-
-      {/* サプライ表示（メイン画面とは別） */}
-      <section className="supply-section">
-        <h3>サプライ</h3>
-
-        <div className="supply-block">
-          <h4>基本サプライ</h4>
-          <div className="supply-grid basic">
-            {state.supply.basic.map((p, i) => {
-              const affordable = state.coins >= p.card.cost && state.buys > 0 && state.phase === 'buy' && p.count > 0;
-              return (
-                <div key={p.card.id + '-' + i} className="supply-pile">
-                  <Card card={p.card} size="small" />
-                  <div className="pile-cost">コスト: {p.card.cost}</div>
-                  <div className="pile-count">残り: {p.count}</div>
-                  <button className="action-btn" onClick={() => buyCard('basic', i)} disabled={!affordable}>
-                    購入
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="supply-block">
-          <h4>王国カード（ランダム10種）</h4>
-
-          {/* 2行 x 5列 のグリッド */}
-          <div className="supply-grid kingdom">
-            {Array.from({ length: 10 }).map((_, idx) => {
-              const pile = state.supply.kingdom[idx];
-              if (!pile || !pile.card) {
-                return (
-                  <div key={`empty-${idx}`} className="supply-pile empty">
-                    未選択
-                  </div>
-                );
-              }
-              const affordable = state.coins >= pile.card.cost && state.buys > 0 && state.phase === 'buy' && pile.count > 0;
-              return (
-                <div key={pile.card.id + '-' + idx} className="supply-pile" title={`山札 #${idx + 1}`}>
-                  <Card card={pile.card} size="small" />
-                  <div className="pile-cost">コスト: {pile.card.cost}</div>
-                  <div className="pile-count">残り: {pile.count}</div>
-                  <button className="action-btn" onClick={() => buyCard('kingdom', idx)} disabled={!affordable}>
-                    購入
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* デバッグ用: 山札を画面本体とは別に表示 */}
-      <aside className="debug-section">
-        <h3>デバッグ — 山札 (Deck)</h3>
-        <div className="status-row deck-count">枚数: {state.deck.length}</div>
-        <div className="deck-grid">
-          {state.deck.length === 0 && <div className="empty-text">山札が空です</div>}
-          {state.deck.map((c, i) => (
-            <div key={c.id + '-' + i} title={`#${i + 1} ${c.name}`}>
-              <Card card={c} size="small" />
-            </div>
-          ))}
-        </div>
-      </aside>
     </div>
   );
 }
