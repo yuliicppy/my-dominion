@@ -19,11 +19,13 @@ export type EffectDef =
   | { kind: "GainCard"; maxCost: number; destination: "discard" | "hand" } // カードを獲得する
   | { kind: "TrashCard"; amount: number; from: "hand" } // カードを廃棄する
   | { kind: "DiscardForDraw"; min?: number; max?: number} // N枚捨ててN枚ドロー
+  | { kind: "TrashFromHand"; max: number;}
   | ConditionalEffect // 特殊処理: 条件付き効果 => if表現
   | RepeatEffect; // 特殊処理: 繰り返し効果 => loop表現
 
 type PendingEffect =
-  | { kind: "DiscardForDraw" }; 
+  | { kind: "DiscardForDraw" }
+  | { kind: "TrashFromHand"; max: number;};
 
 // 条件付き効果の定義
 type ConditionalEffect = {
@@ -71,6 +73,7 @@ export type GameState = {
   deck: Card[]; // 山札
   hand: Card[]; // 手札
   discard: Card[]; // 捨て札
+  trash: Card[]; // 廃棄置き場
   inPlayTreasure: Card[]; // プレーしたカード(財宝)
   inPlayAction: Card[]; // プレーしたカード(アクション)
   supply: { basic: SupplyPile[]; kingdom: SupplyPile[]}; // サプライ

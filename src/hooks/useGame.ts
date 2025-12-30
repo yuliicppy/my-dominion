@@ -11,7 +11,7 @@ export function useGame() {
 
   function drawCards(n = 1) {
     setState(prev => {
-      const next = { ...prev, deck: [...prev.deck], hand: [...prev.hand], discard: [...prev.discard] };
+      const next = { ...prev, deck: [...prev.deck], hand: [...prev.hand], discard: [...prev.discard], trash: [...prev.trash] };
       engineDraw(next, n);
       return next;
     });
@@ -198,6 +198,32 @@ export function useGame() {
     });
   }
 
+  function resolveTrashFromHand(indices: number[]){
+    setState(prev => {
+      if(!prev.pendingEffect || prev.pendingEffect.kind !== "TrashFromHand") return prev;
+      const max = prev.pendingEffect.max;
+
+      const unique = Array.from(new Set(indices)).filter(i => i >= 0 && i < prev.hand.length).slice(0, max).sort((a,b) => b-a);
+      const next: GameState = {
+        ...prev,
+        deck: [...prev.deck],
+        hand: [...prev.hand],
+        discard: [...prev.discard],
+        trash: [...prev.trash],
+        inPlayTreasure: [...prev.inPlayTreasure],
+        inPlayAction: [...prev.inPlayAction],
+        pendingEffect: null,
+      };
+
+      for(const idx of unique){
+        const removed = next.hand.splice(idx, 1)[0];
+        if(removed) next.trash.push(removed);
+      }
+
+      return next;
+    });
+  }
+
   function debugAddCardToHand(cardId: string){
     setState(prev => {
       const card = requireCard(cardMaster, cardId);
@@ -208,5 +234,5 @@ export function useGame() {
     });
   }
 
-  return { state, drawCards, startTurn, endTurn, playAction, playTreasure, playAllTreasures, buyCard, resolveDiscardForDraw, debugAddCardToHand};
+  return { state, drawCards, startTurn, endTurn, playAction, playTreasure, playAllTreasures, buyCard, resolveDiscardForDraw, resolveTrashFromHand, debugAddCardToHand};
 }

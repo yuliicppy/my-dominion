@@ -27,6 +27,7 @@ export function createInitialState(): GameState {
     deck, // 残りのカード
     hand,
     discard: [],
+    trash: [],
     inPlayTreasure: [],
     inPlayAction: [],
     supply: createSupply(cardMaster),
@@ -70,6 +71,9 @@ export function applyEffects(state: GameState, effects: EffectDef[]): void {
         break;
       case "DiscardForDraw":
         state.pendingEffect = { kind: "DiscardForDraw" };
+        break;
+      case "TrashFromHand":
+        state.pendingEffect = { kind: "TrashFromHand", max: effect.max};
         break;
       default:
         console.log("Undefined effect occured");
