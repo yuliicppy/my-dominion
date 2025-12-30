@@ -4,6 +4,8 @@ import { GameState, Card, EffectDef } from './types';
 import { createSupply } from './supply';
 import { cardMaster } from './cardData';
 import { requireCard } from './utils';
+import { applyInstantEffect } from './effects/instantHandlers';
+import { pendingRegistry } from './effects/pending';
 
 function shuffle<T>(arr: T[]) {
   for (let i = arr.length - 1; i > 0; i--) {
@@ -56,29 +58,12 @@ export function draw(state: GameState, n = 1): void {
 
 export function applyEffects(state: GameState, effects: EffectDef[]): void {
   effects.forEach(effect => {
-    switch(effect.kind){
-      case "DrawCards":
-        draw(state, effect.amount);
-        break;
-      case "AddActions":
-        state.actions += effect.amount;
-        break;
-      case "AddBuys":
-        state.buys += effect.amount;
-        break;
-      case "AddCoins":
-        state.coins += effect.amount;
-        break;
-      case "DiscardForDraw":
-        state.pendingEffect = { kind: "DiscardForDraw" };
-        break;
-      case "TrashFromHand":
-        state.pendingEffect = { kind: "TrashFromHand", max: effect.max};
-        break;
-      default:
-        console.log("Undefined effect occured");
-        break;
+    const pending = pendingRegistry[effect.kind as keyof typeof pendingRegistry];
+    if (pending) {
+      pending.init(state, effect);
+      return;
     }
+    applyInstantEffect(state, effect);
   });
 
 }

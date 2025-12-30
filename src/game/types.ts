@@ -23,7 +23,7 @@ export type EffectDef =
   | ConditionalEffect // 特殊処理: 条件付き効果 => if表現
   | RepeatEffect; // 特殊処理: 繰り返し効果 => loop表現
 
-type PendingEffect =
+export type PendingEffect =
   | { kind: "DiscardForDraw" }
   | { kind: "TrashFromHand"; max: number;};
 
