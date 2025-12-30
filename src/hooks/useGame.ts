@@ -37,5 +37,18 @@ export function useGame() {
   const resolveTrashFromHand = (indices: number[]) => update(state => resolveTrashFromHandAction(state, indices));
   const debugAddCardToHand = (cardId: string) => update(state => debugAddCardToHandAction(state, cardId));
 
-  return { state, drawCards, startTurn, endTurn, playAction, playTreasure, playAllTreasures, buyCard, resolveDiscardForDraw, resolveTrashFromHand, debugAddCardToHand};
+  const actions = {
+    drawCards,
+    startTurn,
+    endTurn,
+    playAction,
+    playTreasure,
+    playAllTreasures,
+    buyCard,
+    resolveDiscardForDraw,
+    resolveTrashFromHand,
+    debugAddCardToHand,
+  } satisfies Record<string, (...args: any[]) => void>;
+
+  return { state, ...actions };
 }

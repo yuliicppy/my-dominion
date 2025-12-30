@@ -17,7 +17,7 @@ export default function GameBoard() {
       c.name.includes(q) || c.id.toLowerCase().includes(q.toLowerCase())
     );
   }, [debugQuery]);
-  const { state, drawCards, startTurn, endTurn, playAction, playTreasure, playAllTreasures, buyCard, resolveDiscardForDraw, resolveTrashFromHand, debugAddCardToHand } = useGame();
+  const { state, ...actions } = useGame();
 
   const canPlayAllTreasures = state.hand.some(c => c.types.includes('Treasure')) && (state.phase === 'action' || state.phase === 'buy');
 
@@ -33,7 +33,7 @@ export default function GameBoard() {
           </div>
         </div>
         <div className="controls-row">
-          <button onClick={() => endTurn()}>End Turn</button>
+          <button onClick={() => actions.endTurn()}>End Turn</button>
           <button onClick={() => setShowDebug(v => !v)}>
             {showDebug ? 'デバッグを隠す' : 'デバッグを表示'}
           </button>
@@ -44,7 +44,7 @@ export default function GameBoard() {
         <section className="hand-panel panel">
           <div className="panel-header">
             <h3>Hand</h3>
-            <button className="action-btn" onClick={() => playAllTreasures()} disabled={!canPlayAllTreasures}>
+            <button className="action-btn" onClick={() => actions.playAllTreasures()} disabled={!canPlayAllTreasures}>
               財宝を一括プレー
             </button>
           </div>
@@ -59,14 +59,14 @@ export default function GameBoard() {
                   <Card card={c} size="normal" />
                   {isTreasure && <button
                     className="action-btn"
-                    onClick={() => playTreasure(c.id)}
+                    onClick={() => actions.playTreasure(c.id)}
                     disabled={!canPlayTreasure}
                   >
                     財宝をプレー
                   </button>}
                   {isAction && <button
                     className="action-btn"
-                    onClick={() => playAction(c.id)}
+                    onClick={() => actions.playAction(c.id)}
                     disabled={!canPlayAction}
                   >
                     アクションをプレー
@@ -77,7 +77,7 @@ export default function GameBoard() {
             })}
             {state.hand.length === 0 && <div className="empty-text">No cards in hand</div>}
           </div>
-          <PendingEffectPanel state={state} onResolveDiscardForDraw={resolveDiscardForDraw} onResolveTrashFromHand={resolveTrashFromHand} />
+          <PendingEffectPanel state={state} onResolveDiscardForDraw={actions.resolveDiscardForDraw} onResolveTrashFromHand={actions.resolveTrashFromHand} />
           <div className="played-area">
             <div className="panel-subheader">
               <h4>Played</h4>
@@ -113,7 +113,7 @@ export default function GameBoard() {
                       <Card card={p.card} size="small" />
                       <div className="pile-cost">コスト: {p.card.cost}</div>
                       <div className="pile-count">残り: {p.count}</div>
-                      <button className="action-btn" onClick={() => buyCard('basic', i)} disabled={!affordable}>
+                      <button className="action-btn" onClick={() => actions.buyCard('basic', i)} disabled={!affordable}>
                         購入
                       </button>
                     </div>
@@ -142,7 +142,7 @@ export default function GameBoard() {
                       <Card card={pile.card} size="small" />
                       <div className="pile-cost">コスト: {pile.card.cost}</div>
                       <div className="pile-count">残り: {pile.count}</div>
-                      <button className="action-btn" onClick={() => buyCard('kingdom', idx)} disabled={!affordable}>
+                      <button className="action-btn" onClick={() => actions.buyCard('kingdom', idx)} disabled={!affordable}>
                         購入
                       </button>
                     </div>
@@ -169,7 +169,7 @@ export default function GameBoard() {
             {
               filteredDebugCards.map(card => (
                 <button key={card.id} className="debug-card-row"
-                onClick={() => debugAddCardToHand(card.id)}>
+                onClick={() => actions.debugAddCardToHand(card.id)}>
                   <span className="debug-card-name">{card.name}</span>
                   <span className="debug-card-meta">ID: {card.id}</span>
                 </button>
