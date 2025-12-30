@@ -1,7 +1,7 @@
 // ゲーム状態を管理するカスタムフック
 
 import { useState } from 'react';
-import { GameState } from '../game/types';
+import { GameState, Card } from '../game/types';
 import { createInitialState, draw as engineDraw, applyEffects } from '../game/engine';
 import { cardMaster } from '../game/cardData';
 import { requireCard } from '../game/utils';
@@ -25,6 +25,7 @@ export function useGame() {
       next.buys = 1;
       next.coins = 0;
       next.phase = 'action';
+      next.pendingEffect = null;
       // ドロー（標準5枚）: 手札をクリアして5枚引く簡易処理
       next.discard = [...next.discard];
       next.hand = [];
@@ -54,6 +55,7 @@ export function useGame() {
       next.buys = 1;
       next.coins = 0;
       next.phase = 'action';
+      next.pendingEffect = null;
 
       // ドロー（標準5枚）
       engineDraw(next, 5);
@@ -170,6 +172,32 @@ export function useGame() {
     });
   }
 
+  function resolveDiscardForDraw(indices: number[]){
+    setState(prev => {
+      if(!prev.pendingEffect || prev.pendingEffect.kind !== 'DiscardForDraw') return prev;
+
+      const unique = Array.from(new Set(indices)).filter(i => i >= 0 && i < prev.hand.length).sort((a, b) => b-a);
+      const next: GameState = {
+        ...prev,
+        deck: [...prev.deck],
+        hand: [...prev.hand],
+        discard: [...prev.discard],
+        inPlayTreasure: [...prev.inPlayTreasure],
+        inPlayAction: [...prev.inPlayAction],
+        pendingEffect: null,
+      }
+
+      const discarded: Card[] = [];
+      for(const idx of unique){
+        const removed = next.hand.splice(idx, 1)[0];
+        if(removed) discarded.push(removed);
+      }
+      next.discard.push(...discarded);
+      engineDraw(next, discarded.length);
+      return next;
+    });
+  }
+
   function debugAddCardToHand(cardId: string){
     setState(prev => {
       const card = requireCard(cardMaster, cardId);
@@ -180,5 +208,5 @@ export function useGame() {
     });
   }
 
-  return { state, drawCards, startTurn, endTurn, playAction, playTreasure, playAllTreasures, buyCard, debugAddCardToHand};
+  return { state, drawCards, startTurn, endTurn, playAction, playTreasure, playAllTreasures, buyCard, resolveDiscardForDraw, debugAddCardToHand};
 }

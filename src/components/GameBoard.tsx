@@ -1,6 +1,6 @@
 // カードゲームのメインボードコンポーネント
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useGame } from '../hooks/useGame';
 import { cardMaster } from '../game/cardData';
 import Card from './Card';
@@ -16,9 +16,16 @@ export default function GameBoard() {
       c.name.includes(q) || c.id.toLowerCase().includes(q.toLowerCase())
     );
   }, [debugQuery]);
-  const { state, drawCards, startTurn, endTurn, playAction, playTreasure, playAllTreasures, buyCard, debugAddCardToHand } = useGame();
+  const { state, drawCards, startTurn, endTurn, playAction, playTreasure, playAllTreasures, buyCard, resolveDiscardForDraw, debugAddCardToHand } = useGame();
+
+  const [cellarSelection, setCellarSelection] = useState<number[]>([]);
 
   const canPlayAllTreasures = state.hand.some(c => c.types.includes('Treasure')) && (state.phase === 'action' || state.phase === 'buy');
+  const cellarPending = state.pendingEffect?.kind === 'DiscardForDraw';
+
+  useEffect(() => {
+    if(!cellarPending) setCellarSelection([]);
+  }, [cellarPending]);
 
   return (
     <div className="gameboard-root">
@@ -53,9 +60,19 @@ export default function GameBoard() {
               const isAction = c.types.includes('Action');
               const canPlayTreasure = isTreasure && (state.phase === 'action' || state.phase === 'buy');
               const canPlayAction = isAction && state.phase === 'action' && state.actions > 0;
+              const checked = cellarSelection.includes(i);
               return (
                 <div key={c.id + '-' + i} className="hand-card">
                   <Card card={c} size="normal" />
+                  {cellarPending && (
+                    <label className="cellar-select">
+                      <input type="checkbox" checked={checked}
+                      onChange = {() => setCellarSelection(prev => 
+                        checked? prev.filter(idx => idx !== i) : [...prev, i]
+                      )}></input>
+                      捨てる
+                    </label>
+                  )}
                   {isTreasure && <button
                     className="action-btn"
                     onClick={() => playTreasure(c.id)}
@@ -76,6 +93,17 @@ export default function GameBoard() {
             })}
             {state.hand.length === 0 && <div className="empty-text">No cards in hand</div>}
           </div>
+          {cellarPending && (
+            <div className="cellar-actions">
+              <span>地下貯蔵庫: 捨てるカードを選んでください（{cellarSelection.length}枚）</span>
+              <button
+                className="action-btn"
+                onClick={() => resolveDiscardForDraw(cellarSelection)}
+              >
+                選択枚数を捨てて同数ドロー
+              </button>
+            </div>
+          )}
           <div className="played-area">
             <div className="panel-subheader">
               <h4>Played</h4>

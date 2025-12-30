@@ -36,6 +36,7 @@ export function createInitialState(): GameState {
     buys: 1,
     coins: 0,
     phase: 'action',
+    pendingEffect: null,
   };
 }
 
@@ -56,8 +57,19 @@ export function applyEffects(state: GameState, effects: EffectDef[]): void {
   effects.forEach(effect => {
     switch(effect.kind){
       case "DrawCards":
-        console.log("DrawCards effect occured")
         draw(state, effect.amount);
+        break;
+      case "AddActions":
+        state.actions += effect.amount;
+        break;
+      case "AddBuys":
+        state.buys += effect.amount;
+        break;
+      case "AddCoins":
+        state.coins += effect.amount;
+        break;
+      case "DiscardForDraw":
+        state.pendingEffect = { kind: "DiscardForDraw" };
         break;
       default:
         console.log("Undefined effect occured");

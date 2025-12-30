@@ -14,7 +14,10 @@ export const cardMaster: Card[] = [
   { id: 'curse', name: '呪い', types: ['Curse'], cost: 0, description: '勝利点-1', effects: [], expansion: 'Base', isBasicSupply: true },
 
   // 王国カード(基本) — expansion は Base, isBasicSupply: false
-  { id: 'cellar', name: '地下貯蔵庫', types: ['Action'], cost: 2, description: '+1アクション\n 手札から好きな枚数のカードを捨て札にし,その枚数分だけデッキからカードを引く。', effects: [], expansion: 'Base', isBasicSupply: false },
+  { id: 'cellar', name: '地下貯蔵庫', types: ['Action'], cost: 2, description: '+1アクション\n 手札から好きな枚数のカードを捨て札にし、その枚数分だけデッキからカードを引く。', effects: [
+    { kind: "AddActions", amount: 1 },
+    { kind: "DiscardForDraw" }
+  ], expansion: 'Base', isBasicSupply: false },
   { id: 'moat', name: '堀', types: ['Action', 'Reaction'], cost: 2, description: 'カードを2枚引く（反応あり）', effects: [], expansion: 'Base', isBasicSupply: false },
   { id: 'chapel', name: '礼拝堂', types: ['Action'], cost: 2, description: 'カードを最大4枚廃棄できる', effects: [], expansion: 'Base', isBasicSupply: false },
   { id: 'vassal', name: '家臣', types: ['Action'], cost: 3, description: '+{coin:2}\n デッキの一番上のカードを1枚捨て札にする。それがアクションカードである場合、それを使用してもよい。', effects: [], expansion: 'Base', isBasicSupply: false },

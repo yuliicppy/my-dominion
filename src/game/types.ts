@@ -18,9 +18,12 @@ export type EffectDef =
   | { kind: "AddCoins"; amount: number } // コインを増やす
   | { kind: "GainCard"; maxCost: number; destination: "discard" | "hand" } // カードを獲得する
   | { kind: "TrashCard"; amount: number; from: "hand" } // カードを廃棄する
+  | { kind: "DiscardForDraw"; min?: number; max?: number} // N枚捨ててN枚ドロー
   | ConditionalEffect // 特殊処理: 条件付き効果 => if表現
   | RepeatEffect; // 特殊処理: 繰り返し効果 => loop表現
 
+type PendingEffect =
+  | { kind: "DiscardForDraw" }; 
 
 // 条件付き効果の定義
 type ConditionalEffect = {
@@ -79,4 +82,5 @@ export type GameState = {
   buys: number;
   coins: number;
   phase: 'action' | 'buy' | 'cleanup';
+  pendingEffect: PendingEffect | null;
 };
