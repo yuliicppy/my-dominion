@@ -139,3 +139,34 @@
   color: rgba(0, 0, 0, 0.82);
   white-space: pre-wrap;
 }
+
+/* description icon badges */
+.icon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 2px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid #d4b850;
+  background: #f5e09e;
+  color: #2b2b2b;
+  font-weight: 700;
+}
+
+.icon-badge.icon-victory {
+  border-color: #6ebf5a;
+  background: #d8f3d0;
+  color: #175c1a;
+}
+
+.icon-value {
+  font-size: 12px;
+}
+
+.icon-glyph {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  text-align: center;
+}

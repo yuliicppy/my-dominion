@@ -56,6 +56,12 @@ export type Card = {
   isBasicSupply: boolean;
 };
 
+// カード表示用のトークン型
+export type DescToken =
+  | {kind: 'text'; text: string }
+  | {kind: 'icon'; icon: 'coin' | 'victory'; value?: number }
+  | {kind: 'lineBreak' };
+
 import { SupplyPile } from './supply';
 
 export type GameState = {

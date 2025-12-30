@@ -1,7 +1,7 @@
 // カード表示コンポーネント
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Card as CardType } from '../game/types';
+import { Card as CardType, DescToken } from '../game/types';
 import './Card.css';
 
 function pickColor(types?: string[]) {
@@ -24,7 +24,6 @@ export default function Card({ card, size = 'normal' }: { card: CardType; size?:
   const { bg, color } = pickColor(Array.isArray(card.types) ? card.types : undefined);
 
   const typeText = Array.isArray(card.types) ? card.types.join(', ') : (card as any).type ?? '';
-  const desc = card.description ?? (card as any).text ?? '';
   const containerClass = `card-container ${isSmall ? 'small' : 'normal'}`;
   const nameLength = card.name.length;
   const nameSize = isSmall ? (nameLength > 16 ? 10 : nameLength > 12 ? 11 : 12) : (nameLength > 20 ? 12 : nameLength > 14 ? 13 : 14);
@@ -86,8 +85,49 @@ export default function Card({ card, size = 'normal' }: { card: CardType; size?:
       >
         <div className="card-preview-name">{card.name}</div>
         <div className="card-preview-meta">{typeText} ・ コスト: {card.cost}</div>
-        <div className="card-preview-desc">{desc || '説明なし'}</div>
+        <div className="card-preview-desc">
+          <Description desc={card.description ?? (card as any).text ?? ''} />
+        </div>
       </div>
     </div>
+  );
+}
+
+// {coin} {coin:3} {victory} と改行(\n)をトークン化して表示する
+function tokenizeDesc(desc?: string): DescToken[] {
+  if (!desc) return [];
+  const out: DescToken[] = [];
+  const re = /\{(coin|victory)(?::(\d+))?\}|\n/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(desc))) {
+    if (m.index > last) out.push({ kind: 'text', text: desc.slice(last, m.index) });
+    if (m[0] === '\n') {
+      out.push({ kind: 'lineBreak' });
+    } else {
+      out.push({ kind: 'icon', icon: m[1] as 'coin' | 'victory', value: m[2] ? Number(m[2]) : undefined });
+    }
+    last = re.lastIndex;
+  }
+  if (last < desc.length) out.push({ kind: 'text', text: desc.slice(last) });
+  return out;
+}
+
+function Description({ desc }: { desc?: string }) {
+  const tokens = tokenizeDesc(desc);
+  if (tokens.length === 0) return <>説明なし</>;
+  return (
+    <>
+      {tokens.map((t, idx) => {
+        if (t.kind === 'text') return <span key={idx}>{t.text}</span>;
+        if (t.kind === 'lineBreak') return <br key={idx} />;
+        return (
+          <span key={idx} className={`icon-badge icon-${t.icon}`}>
+            {t.value != null && <span className="icon-value">{t.value}</span>}
+            <span className="icon-glyph">{t.icon === 'coin' ? '◎' : '◆'}</span>
+          </span>
+        );
+      })}
+    </>
   );
 }
