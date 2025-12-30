@@ -41,17 +41,27 @@ export default function GameBoard() {
           <div className="hand-area">
             {state.hand.map((c, i) => {
               const isTreasure = c.types.includes('Treasure');
-              const canPlay = isTreasure && (state.phase === 'action' || state.phase === 'buy');
+              const isAction = c.types.includes('Action');
+              const canPlayTreasure = isTreasure && (state.phase === 'action' || state.phase === 'buy');
+              const canPlayAction = isAction && state.phase === 'action' && state.actions > 0;
               return (
                 <div key={c.id + '-' + i} className="hand-card">
                   <Card card={c} size="normal" />
-                  <button
+                  {isTreasure && <button
                     className="action-btn"
                     onClick={() => playTreasure(c.id)}
-                    disabled={!canPlay}
+                    disabled={!canPlayTreasure}
                   >
                     財宝をプレー
-                  </button>
+                  </button>}
+                  {isAction && <button
+                    className="action-btn"
+                    onClick={() => playAction(c.id)}
+                    disabled={!canPlayAction}
+                  >
+                    アクションをプレー
+                  </button>}
+
                 </div>
               );
             })}

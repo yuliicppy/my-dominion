@@ -28,7 +28,7 @@ export const cardMaster: Card[] = [
   { id: 'moneylender', name: '金貸し', types: ['Action'], cost: 4, description: '銅貨をトラッシュしてコイン獲得', effects: [], expansion: 'Base', isBasicSupply: false },
   { id: 'poacher', name: '密猟者', types: ['Action'], cost: 4, description: 'ドローと小さな罰則', effects: [], expansion: 'Base', isBasicSupply: false },
   { id: 'remodel', name: '改築', types: ['Action'], cost: 4, description: 'カードを廃棄してより高コストのカードを獲得', effects: [], expansion: 'Base', isBasicSupply: false },
-  { id: 'smithy', name: '鍛冶屋', types: ['Action'], cost: 4, description: 'カードを3枚引く', effects: [], expansion: 'Base', isBasicSupply: false },
+  { id: 'smithy', name: '鍛冶屋', types: ['Action'], cost: 4, description: 'カードを3枚引く', effects: [{ kind: "DrawCards", amount: 3}], expansion: 'Base', isBasicSupply: false },
   { id: 'spy', name: 'スパイ', types: ['Action', 'Attack'], cost: 4, description: '自身と相手のトップカードを処理', effects: [], expansion: 'Base', isBasicSupply: false },
   { id: 'thief', name: '泥棒', types: ['Action', 'Attack'], cost: 4, description: 'デッキから財宝を盗む', effects: [], expansion: 'Base', isBasicSupply: false },
   { id: 'throne_room', name: '玉座の間', types: ['Action'], cost: 4, description: 'アクションカードを2回使う', effects: [], expansion: 'Base', isBasicSupply: false },

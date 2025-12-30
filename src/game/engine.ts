@@ -1,6 +1,6 @@
 // ゲームエンジンの基本ロジック
 
-import { GameState, Card } from './types';
+import { GameState, Card, EffectDef } from './types';
 import { createSupply } from './supply';
 import { cardMaster } from './cardData';
 import { requireCard } from './utils';
@@ -28,6 +28,7 @@ export function createInitialState(): GameState {
     hand,
     discard: [],
     inPlayTreasure: [],
+    inPlayAction: [],
     supply: createSupply(cardMaster),
     turn: 1,
     // 初期のアクション管理
@@ -38,7 +39,7 @@ export function createInitialState(): GameState {
   };
 }
 
-// 簡易 draw: デッキが足りなければ捨て札をシャッフルして補充
+// ドロー: デッキが足りなければ捨て札をシャッフルして補充
 export function draw(state: GameState, n = 1): void {
   for (let i = 0; i < n; i++) {
     if (state.deck.length === 0 && state.discard.length > 0) {
@@ -49,4 +50,19 @@ export function draw(state: GameState, n = 1): void {
     const card = state.deck.shift();
     if (card) state.hand.push(card);
   }
+}
+
+export function applyEffects(state: GameState, effects: EffectDef[]): void {
+  effects.forEach(effect => {
+    switch(effect.kind){
+      case "DrawCards":
+        console.log("DrawCards effect occured")
+        draw(state, effect.amount);
+        break;
+      default:
+        console.log("Undefined effect occured");
+        break;
+    }
+  });
+
 }

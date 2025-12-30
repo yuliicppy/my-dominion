@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { GameState } from '../game/types';
-import { createInitialState, draw as engineDraw } from '../game/engine';
+import { createInitialState, draw as engineDraw, applyEffects } from '../game/engine';
 
 export function useGame() {
   const [state, setState] = useState<GameState>(() => createInitialState());
@@ -38,8 +38,9 @@ export function useGame() {
         ...prev,
         deck: [...prev.deck],
         hand: [],
-        discard: [...prev.discard, ...prev.hand, ...prev.inPlayTreasure],
+        discard: [...prev.discard, ...prev.hand, ...prev.inPlayTreasure, ...prev.inPlayAction],
         inPlayTreasure: [],
+        inPlayAction: [],
       };
 
       // cleanupフェーズ表示
@@ -59,12 +60,27 @@ export function useGame() {
     });
   }
 
-  function playAction() {
+  function playAction(cardId: string) {
     setState(prev => {
-      if (prev.actions <= 0) return prev;
-      const next = { ...prev };
+      if (prev.phase !== 'action' || prev.actions <= 0) return prev;
+
+      const handIdx = prev.hand.findIndex(c => c.id === cardId && c.types.includes('Action'));
+      if(handIdx === -1) return prev;
+
+      const next: GameState = {
+        ...prev,
+        deck: [...prev.deck],
+        hand: [...prev.hand],
+        discard: [...prev.discard],
+        inPlayTreasure: [...prev.inPlayTreasure],
+        inPlayAction: [...prev.inPlayAction],
+      };
+
+      const card = next.hand.splice(handIdx, 1)[0];
+      next.inPlayAction.push(card);
       next.actions = prev.actions - 1;
-      // 実際はカード効果の適用が入るが、今は仮置き
+
+      applyEffects(next, card.effects);
       return next;
     });
   }

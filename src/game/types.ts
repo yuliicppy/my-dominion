@@ -11,7 +11,7 @@ type Condition =
   | { kind: "HasTypeInPlay"; cardType: CardType };
 
 // カード効果の定義
-type EffectDef =
+export type EffectDef =
   | { kind: "DrawCards"; amount: number } // カードを引く
   | { kind: "AddActions"; amount: number } // アクションを増やす
   | { kind: "AddBuys"; amount: number } // 購入回数を増やす
@@ -63,6 +63,7 @@ export type GameState = {
   hand: Card[]; // 手札
   discard: Card[]; // 捨て札
   inPlayTreasure: Card[]; // プレーしたカード(財宝)
+  inPlayAction: Card[]; // プレーしたカード(アクション)
   supply: { basic: SupplyPile[]; kingdom: SupplyPile[]}; // サプライ
 
   turn: number; // 現在のターン数
