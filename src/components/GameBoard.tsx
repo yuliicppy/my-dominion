@@ -1,13 +1,22 @@
 // カードゲームのメインボードコンポーネント
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useGame } from '../hooks/useGame';
+import { cardMaster } from '../game/cardData';
 import Card from './Card';
 import './GameBoard.css';
 
 export default function GameBoard() {
   const [showDebug, setShowDebug] = useState(false);
-  const { state, drawCards, startTurn, endTurn, playAction, playTreasure, playAllTreasures, buyCard } = useGame();
+  const [debugQuery, setDebugQuery] = useState('');
+  const filteredDebugCards = useMemo(() => {
+    const q = debugQuery.trim();
+    if(!q) return cardMaster;
+    return cardMaster.filter(c => 
+      c.name.includes(q) || c.id.toLowerCase().includes(q.toLowerCase())
+    );
+  }, [debugQuery]);
+  const { state, drawCards, startTurn, endTurn, playAction, playTreasure, playAllTreasures, buyCard, debugAddCardToHand } = useGame();
 
   const canPlayAllTreasures = state.hand.some(c => c.types.includes('Treasure')) && (state.phase === 'action' || state.phase === 'buy');
 
@@ -145,8 +154,30 @@ export default function GameBoard() {
         {/* デバッグ用: サイドパネルとしてスライド表示 */}
         <aside className={`debug-section panel ${showDebug ? 'is-open' : ''}`} aria-hidden={!showDebug}>
           <div className="panel-header">
-            <h3>デバッグ — 山札 (Deck)</h3>
+            <h3>デバッグ — 山札/カード追加</h3>
             <div className="deck-count">枚数: {state.deck.length}</div>
+          </div>
+          <div className="debug-search">
+            <label className="debug-search-label">
+              カード検索
+              <input type="text" value={debugQuery} onChange={e => setDebugQuery(e.target.value)} placeholder="名前orIDで検索"></input>
+            </label>
+          </div>
+          <div className="debug-card-list">
+            {
+              filteredDebugCards.map(card => (
+                <button key={card.id} className="debug-card-row"
+                onClick={() => debugAddCardToHand(card.id)}>
+                  <span className="debug-card-name">{card.name}</span>
+                  <span className="debug-card-meta">ID: {card.id}</span>
+                </button>
+              ))
+            }
+            {
+              filteredDebugCards.length === 0 && (
+                <div className="empty-text">該当カードがありません</div>
+              )
+            }
           </div>
           <div className="deck-grid">
             {state.deck.length === 0 && <div className="empty-text">山札が空です</div>}

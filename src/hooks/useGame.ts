@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { GameState } from '../game/types';
 import { createInitialState, draw as engineDraw, applyEffects } from '../game/engine';
+import { cardMaster } from '../game/cardData';
+import { requireCard } from '../game/utils';
 
 export function useGame() {
   const [state, setState] = useState<GameState>(() => createInitialState());
@@ -168,5 +170,15 @@ export function useGame() {
     });
   }
 
-  return { state, drawCards, startTurn, endTurn, playAction, playTreasure, playAllTreasures, buyCard };
+  function debugAddCardToHand(cardId: string){
+    setState(prev => {
+      const card = requireCard(cardMaster, cardId);
+      return {
+        ...prev,
+        hand: [...prev.hand, card],
+      };
+    });
+  }
+
+  return { state, drawCards, startTurn, endTurn, playAction, playTreasure, playAllTreasures, buyCard, debugAddCardToHand};
 }
