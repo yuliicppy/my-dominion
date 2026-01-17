@@ -16,6 +16,20 @@ React
 
 （必要に応じて今後追加：Vite / Next.js / Zustand / Redux Toolkit など）
 
+## セットアップ
+
+前提: Node.js と npm がインストール済みであること。
+
+```bash
+npm install
+npm start
+```
+
+テストを実行する場合:
+```bash
+npm test
+```
+
 ## 機能要件
 - ドミニオン基本セット（第2版）のカードを実装
 - ソロプレイ可能（プレイヤーは1人想定）

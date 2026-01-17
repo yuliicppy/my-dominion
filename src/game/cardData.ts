@@ -27,7 +27,14 @@ export const cardMaster: Card[] = [
   { id: 'merchant', name: '商人', types: ['Action'], cost: 3, description: 'カードを引いてコインを得る', effects: [], expansion: 'Base', isBasicSupply: false },
   { id: 'vassal', name: '従者', types: ['Action'], cost: 3, description: 'デッキをめくって処理', effects: [], expansion: 'Base', isBasicSupply: false },
   { id: 'village', name: '村', types: ['Action'], cost: 3, description: 'カードを1枚引き、アクション+2', effects: [], expansion: 'Base', isBasicSupply: false },
-  { id: 'workshop', name: '工房', types: ['Action'], cost: 3, description: 'コストの低いカードを獲得', effects: [], expansion: 'Base', isBasicSupply: false },
+  { id: 'workshop', name: '工房', types: ['Action'], cost: 3,
+    description: 'コスト{coint:4}以下のカードを1枚獲得する。',
+    effects: [
+      { kind: "GainCard", maxCost: 4, destination: "discard" }
+    ],
+    expansion: 'Base', isBasicSupply: false
+  },
+
   { id: 'bureaucrat', name: '役人', types: ['Action'], cost: 4, description: '勝利点カードを公開して相手に渡す', effects: [], expansion: 'Base', isBasicSupply: false },
   { id: 'gardens', name: '庭園', types: ['Victory'], cost: 4, description: 'ゲーム終了時に枚数で勝利点', effects: [], expansion: 'Base', isBasicSupply: false },
   { id: 'militia', name: '民兵', types: ['Action', 'Attack'], cost: 4, description: 'コイン+2、他プレイヤーは手札を2枚にする', effects: [], expansion: 'Base', isBasicSupply: false },

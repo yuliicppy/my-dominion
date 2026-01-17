@@ -24,6 +24,7 @@ const panelRegistry: Record<PendingEffect['kind'], PanelRenderer> = {
       />
     );
   },
+  GainCard: () => null,
 };
 
 export default function PendingEffectPanel(props: Props) {

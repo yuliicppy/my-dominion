@@ -21,6 +21,24 @@ export default function GameBoard() {
 
   const canPlayAllTreasures = state.hand.some(c => c.types.includes('Treasure')) && (state.phase === 'action' || state.phase === 'buy');
 
+  const supplySelectMode = (() => {
+    const pending = state.pendingEffect;
+    if (!pending) return null;
+
+    switch (pending.kind) {
+      case 'GainCard':
+        return {
+          label: '獲得',
+          canSelect: (card: { cost: number }, count: number) =>
+            count > 0 && card.cost <= pending.maxCost,
+          onSelect: (pile: 'basic' | 'kingdom', index: number) =>
+            actions.resolveGainCard({ pile, index }),
+        };
+      default:
+        return null;
+    }
+  })();
+
   return (
     <div className="gameboard-root">
       <header className="top-bar">
@@ -103,18 +121,31 @@ export default function GameBoard() {
             <h3>サプライ</h3>
           </div>
 
+          { supplySelectMode && state.pendingEffect?.kind === 'GainCard' && (
+            <div className="status-row">獲得モード: コスト{state.pendingEffect.maxCost}以下を選択</div>
+          )}
+
           <div className="supply-scroll">
             <div className="supply-block">
               <div className="supply-grid basic">
                 {state.supply.basic.map((p, i) => {
-                  const affordable = state.coins >= p.card.cost && state.buys > 0 && state.phase === 'buy' && p.count > 0;
+                  const canBuy = state.coins >= p.card.cost && state.buys > 0 && state.phase === 'buy' && p.count > 0;
+                  const canSelect = supplySelectMode ? supplySelectMode.canSelect(p.card, p.count) : false;
+
+                  const onClick = supplySelectMode
+                    ? () => supplySelectMode.onSelect('basic', i)
+                    : () => actions.buyCard('basic', i);
+
+                  const disabled = supplySelectMode ? !canSelect : !canBuy;
+                  const label = supplySelectMode ? supplySelectMode.label : '購入';
+
                   return (
                     <div key={p.card.id + '-' + i} className="supply-pile">
                       <Card card={p.card} size="small" />
                       <div className="pile-cost">コスト: {p.card.cost}</div>
                       <div className="pile-count">残り: {p.count}</div>
-                      <button className="action-btn" onClick={() => actions.buyCard('basic', i)} disabled={!affordable}>
-                        購入
+                      <button className="action-btn" onClick={onClick} disabled={disabled}>
+                        {label}
                       </button>
                     </div>
                   );
@@ -136,14 +167,23 @@ export default function GameBoard() {
                       </div>
                     );
                   }
-                  const affordable = state.coins >= pile.card.cost && state.buys > 0 && state.phase === 'buy' && pile.count > 0;
+                  const canBuy = state.coins >= pile.card.cost && state.buys > 0 && state.phase === 'buy' && pile.count > 0;
+                  const canSelect = supplySelectMode ? supplySelectMode.canSelect(pile.card, pile.count) : false;
+
+                  const onClick = supplySelectMode
+                    ? () => supplySelectMode.onSelect('kingdom', idx)
+                    : () => actions.buyCard('kingdom', idx);
+
+                  const disabled = supplySelectMode ? !canSelect : !canBuy;
+                  const label = supplySelectMode ? supplySelectMode.label : '購入';
+
                   return (
                     <div key={pile.card.id + '-' + idx} className="supply-pile" title={`山札 #${idx + 1}`}>
                       <Card card={pile.card} size="small" />
                       <div className="pile-cost">コスト: {pile.card.cost}</div>
                       <div className="pile-count">残り: {pile.count}</div>
-                      <button className="action-btn" onClick={() => actions.buyCard('kingdom', idx)} disabled={!affordable}>
-                        購入
+                      <button className="action-btn" onClick={onClick} disabled={disabled}>
+                        {label}
                       </button>
                     </div>
                   );

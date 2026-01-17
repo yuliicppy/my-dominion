@@ -25,7 +25,8 @@ export type EffectDef =
 
 export type PendingEffect =
   | { kind: "DiscardForDraw" }
-  | { kind: "TrashFromHand"; max: number;};
+  | { kind: "TrashFromHand"; max: number;}
+  | { kind: "GainCard"; maxCost: number; destination: "discard" | "hand" };
 
 // 条件付き効果の定義
 type ConditionalEffect = {

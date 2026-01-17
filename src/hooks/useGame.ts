@@ -13,6 +13,9 @@ import { playAllTreasures as playAllTreasuresAction } from './actions/playAllTre
 import { buyCard as buyCardAction } from './actions/buyCard';
 import { resolveDiscardForDraw as resolveDiscardForDrawAction } from './actions/resolveDiscardForDraw';
 import { resolveTrashFromHand as resolveTrashFromHandAction } from './actions/resolveTrashFromHand';
+import { resolveGainCard as resolveGainCardAction } from './actions/resolveGainCard';
+
+// DEBUG系
 import { debugAddCardToHand as debugAddCardToHandAction } from './actions/debugAddCardToHand';
 
 export function useGame() {
@@ -35,6 +38,7 @@ export function useGame() {
   const buyCard = (pile: 'basic' | 'kingdom', index: number) => update(state => buyCardAction(state, pile, index));
   const resolveDiscardForDraw = (indices: number[]) => update(state => resolveDiscardForDrawAction(state, indices));
   const resolveTrashFromHand = (indices: number[]) => update(state => resolveTrashFromHandAction(state, indices));
+  const resolveGainCard = (payload: { pile: 'basic' | 'kingdom'; index: number }) => update(state => resolveGainCardAction(state, payload));
   const debugAddCardToHand = (cardId: string) => update(state => debugAddCardToHandAction(state, cardId));
 
   const actions = {
@@ -47,6 +51,7 @@ export function useGame() {
     buyCard,
     resolveDiscardForDraw,
     resolveTrashFromHand,
+    resolveGainCard,
     debugAddCardToHand,
   } satisfies Record<string, (...args: any[]) => void>;
 
