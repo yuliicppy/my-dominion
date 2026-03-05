@@ -20,13 +20,15 @@ export type EffectDef =
   | { kind: "TrashCard"; amount: number; from: "hand" } // カードを廃棄する
   | { kind: "DiscardForDraw"; min?: number; max?: number} // N枚捨ててN枚ドロー
   | { kind: "TrashFromHand"; max: number;}
+  | { kind: "TopdeckFromDiscard"; max: 1; optional?: boolean }
   | ConditionalEffect // 特殊処理: 条件付き効果 => if表現
   | RepeatEffect; // 特殊処理: 繰り返し効果 => loop表現
 
 export type PendingEffect =
   | { kind: "DiscardForDraw" }
   | { kind: "TrashFromHand"; max: number;}
-  | { kind: "GainCard"; maxCost: number; destination: "discard" | "hand" };
+  | { kind: "GainCard"; maxCost: number; destination: "discard" | "hand" }
+  | { kind: "TopdeckFromDiscard"; max: number; optional: boolean };
 
 // 条件付き効果の定義
 type ConditionalEffect = {

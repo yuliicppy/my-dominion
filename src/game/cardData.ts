@@ -23,7 +23,15 @@ export const cardMaster: Card[] = [
     { kind: "TrashFromHand", max:4 }
   ], expansion: 'Base', isBasicSupply: false },
   { id: 'vassal', name: '家臣', types: ['Action'], cost: 3, description: '+{coin:2}\n デッキの一番上のカードを1枚捨て札にする。それがアクションカードである場合、それを使用してもよい。', effects: [], expansion: 'Base', isBasicSupply: false },
-  { id: 'harbinger', name: 'ハービンジャー', types: ['Action'], cost: 3, description: 'デッキを操作する', effects: [], expansion: 'Base', isBasicSupply: false },
+  { id: 'harbinger', name: '前駆者', types: ['Action'], cost: 3, 
+    description: '+1カードを引く\n +1アクション\n あなたの捨て札のカードすべてを確認する。その中からカード1枚をあなたのデッキの一番上に置いてもよい。', 
+    effects: [
+      { kind: "DrawCards", amount: 1},
+      { kind: "AddActions", amount: 1}, 
+      { kind: "TopdeckFromDiscard", max: 1, optional: true }
+    ], 
+    expansion: 'Base', isBasicSupply: false 
+  },
   { id: 'merchant', name: '商人', types: ['Action'], cost: 3, description: 'カードを引いてコインを得る', effects: [], expansion: 'Base', isBasicSupply: false },
   { id: 'vassal', name: '従者', types: ['Action'], cost: 3, description: 'デッキをめくって処理', effects: [], expansion: 'Base', isBasicSupply: false },
   { id: 'village', name: '村', types: ['Action'], cost: 3, description: 'カードを1枚引き、アクション+2', effects: [], expansion: 'Base', isBasicSupply: false },
@@ -41,7 +49,11 @@ export const cardMaster: Card[] = [
   { id: 'moneylender', name: '金貸し', types: ['Action'], cost: 4, description: '銅貨をトラッシュしてコイン獲得', effects: [], expansion: 'Base', isBasicSupply: false },
   { id: 'poacher', name: '密猟者', types: ['Action'], cost: 4, description: 'ドローと小さな罰則', effects: [], expansion: 'Base', isBasicSupply: false },
   { id: 'remodel', name: '改築', types: ['Action'], cost: 4, description: 'カードを廃棄してより高コストのカードを獲得', effects: [], expansion: 'Base', isBasicSupply: false },
-  { id: 'smithy', name: '鍛冶屋', types: ['Action'], cost: 4, description: 'カードを3枚引く', effects: [{ kind: "DrawCards", amount: 3}], expansion: 'Base', isBasicSupply: false },
+  { id: 'smithy', name: '鍛冶屋', types: ['Action'], cost: 4, 
+    description: 'カードを3枚引く', 
+    effects: [{ kind: "DrawCards", amount: 3}], 
+    expansion: 'Base', isBasicSupply: false 
+  },
   { id: 'spy', name: 'スパイ', types: ['Action', 'Attack'], cost: 4, description: '自身と相手のトップカードを処理', effects: [], expansion: 'Base', isBasicSupply: false },
   { id: 'thief', name: '泥棒', types: ['Action', 'Attack'], cost: 4, description: 'デッキから財宝を盗む', effects: [], expansion: 'Base', isBasicSupply: false },
   { id: 'throne_room', name: '玉座の間', types: ['Action'], cost: 4, description: 'アクションカードを2回使う', effects: [], expansion: 'Base', isBasicSupply: false },

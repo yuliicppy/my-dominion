@@ -10,6 +10,7 @@ const InstantHandlers: Record<EffectDef['kind'], InstantHandler | undefined> = {
   AddCoins:  (s, e) => { s.coins  += (e as Extract<EffectDef,{kind:'AddCoins'}>).amount; },
   DiscardForDraw: undefined,
   TrashFromHand: undefined,
+  TopdeckFromDiscard: undefined,
   If: undefined,
   Repeat: undefined,
   GainCard: undefined,

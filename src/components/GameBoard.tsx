@@ -95,7 +95,12 @@ export default function GameBoard() {
             })}
             {state.hand.length === 0 && <div className="empty-text">No cards in hand</div>}
           </div>
-          <PendingEffectPanel state={state} onResolveDiscardForDraw={actions.resolveDiscardForDraw} onResolveTrashFromHand={actions.resolveTrashFromHand} />
+          <PendingEffectPanel 
+            state={state} 
+            onResolveDiscardForDraw={actions.resolveDiscardForDraw} 
+            onResolveTrashFromHand={actions.resolveTrashFromHand} 
+            onResolveTopdeckFromDiscard={actions.resolveTopdeckFromDiscard}
+          />
           <div className="played-area">
             <div className="panel-subheader">
               <h4>Played</h4>

@@ -1,11 +1,12 @@
 import React from 'react';
 import { GameState, PendingEffect } from '../game/types';
-import { DiscardForDrawPanel, TrashFromHandPanel } from './pending';
+import { DiscardForDrawPanel, TrashFromHandPanel, TopdeckFromDiscardPanel } from './pending';
 
 type Props = {
   state: GameState;
   onResolveDiscardForDraw: (indices: number[]) => void;
   onResolveTrashFromHand: (indices: number[]) => void;
+  onResolveTopdeckFromDiscard: (payload: { indices: number[] }) => void;
 };
 
 type PanelRenderer = (props: Props) => React.ReactElement | null;
@@ -25,6 +26,17 @@ const panelRegistry: Record<PendingEffect['kind'], PanelRenderer> = {
     );
   },
   GainCard: () => null,
+  TopdeckFromDiscard: ({ state, onResolveTopdeckFromDiscard }) => {
+    if (!state.pendingEffect || state.pendingEffect.kind !== 'TopdeckFromDiscard') return null;
+    return (
+      <TopdeckFromDiscardPanel
+        discard={state.discard}
+        max={state.pendingEffect.max}
+        optional={state.pendingEffect.optional}
+        onResolve={onResolveTopdeckFromDiscard}
+      />
+    );
+  },
 };
 
 export default function PendingEffectPanel(props: Props) {
