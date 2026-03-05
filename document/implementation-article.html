@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dominion風ソロ実装 解析記事</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Prism.js -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1/themes/prism-tomorrow.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1/prism.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-typescript.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-tsx.min.js"></script>
+
+  <!-- Mermaid -->
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({ startOnLoad: true, theme: "base" });
+  </script>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body);"></script>
+</head>
+<body class="bg-[#f5f0e7] text-[#2b2a28]">
+  <main class="max-w-6xl mx-auto px-6 py-12">
+    <header class="mb-12">
+      <p class="text-sm uppercase tracking-[0.3em] text-[#7a7268]">Project Deep Dive</p>
+      <h1 class="text-4xl md:text-5xl font-bold mt-2">ゼロから作るDominion風ソロ実装 解析記事</h1>
+      <p class="mt-4 text-[#5b564e]">
+        React + TypeScript（CRA）構成のカードゲーム実装を、UI/状態管理/ゲームロジックに分けて読み解く。
+        コードの実態に合わせ、未実装領域も含めて現在地を可視化する。
+      </p>
+    </header>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold">目次</h2>
+      <ul class="mt-4 grid md:grid-cols-2 gap-3 text-[#5b564e]">
+        <li>1. 全体像</li>
+        <li>2. エントリとUI構成</li>
+        <li>3. 状態管理とアクション</li>
+        <li>4. ゲームエンジンと効果解決</li>
+        <li>5. データ構造とカード定義</li>
+        <li>6. 既知の制約と改善余地</li>
+      </ul>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold">1. 全体像</h2>
+      <p class="mt-4 text-[#5b564e]">
+        エントリは <code>src/index.tsx</code> から <code>src/App.tsx</code>、UIは
+        <code>components/GameBoard.tsx</code> に集約。ゲーム状態は <code>hooks/useGame.ts</code> が管理し、
+        <code>game/</code> 配下に初期化・サプライ生成・効果解決などのロジックが分離されている。
+      </p>
+      <div class="mt-6 rounded-lg bg-[#fdfbf7] p-4 ring-1 ring-[#e2d7c7]">
+        <pre class="mermaid">
+flowchart TD
+  A[index.tsx] --> B[App.tsx]
+  B --> C[GameBoard.tsx]
+  C --> D[useGame.ts]
+  D --> E[game/engine.ts]
+  D --> F[hooks/actions]
+  E --> G[game/supply.ts]
+  E --> H[game/effects]
+  E --> I[game/cardData.ts]
+        </pre>
+      </div>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold">2. エントリとUI構成</h2>
+      <p class="mt-4 text-[#5b564e]">
+        <code>App.tsx</code> は <code>GameBoard</code> を表示する最小ラッパー。
+        実質的な画面は <code>GameBoard.tsx</code> が担う。
+      </p>
+
+      <div class="mt-6 grid md:grid-cols-2 gap-6">
+        <div class="rounded-lg bg-[#fdfbf7] p-4 ring-1 ring-[#e2d7c7]">
+          <h3 class="text-lg font-semibold mb-3">App.tsx</h3>
+          <pre><code class="language-tsx">import React from 'react';
+import './App.css';
+import GameBoard from './components/GameBoard';
+
+function App() {
+  return (
+    &lt;div className="App"&gt;
+      &lt;header className="App-header"&gt;
+        &lt;GameBoard /&gt;
+      &lt;/header&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;</code></pre>
+        </div>
+        <div class="rounded-lg bg-[#fdfbf7] p-4 ring-1 ring-[#e2d7c7]">
+          <h3 class="text-lg font-semibold mb-3">GameBoardの責務</h3>
+          <ul class="text-[#5b564e] space-y-2">
+            <li>トップバー: ターン/フェーズ/枚数を表示</li>
+            <li>手札エリア: 財宝/アクションの個別プレイ</li>
+            <li>サプライ: 基本 + 王国10山の購入/獲得</li>
+            <li>デバッグ: カード検索と手札追加</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold">3. 状態管理とアクション</h2>
+      <p class="mt-4 text-[#5b564e]">
+        状態は <code>useGame.ts</code> が <code>useState</code> で保持し、
+        各操作は <code>hooks/actions/*</code> の関数に委譲している。
+        状態更新は <code>cloneState</code> を使ったイミュータブル更新。
+      </p>
+
+      <div class="mt-6 rounded-lg bg-[#fdfbf7] p-4 ring-1 ring-[#e2d7c7]">
+        <h3 class="text-lg font-semibold mb-3">useGame.ts（抜粋）</h3>
+        <pre><code class="language-tsx">const [state, setState] = useState&lt;GameState&gt;(() =&gt; createInitialState());
+
+function update(mutator: (next: GameState) =&gt; void) {
+  setState(prev =&gt; {
+    const next = cloneState(prev);
+    mutator(next);
+    return next;
+  });
+}</code></pre>
+      </div>
+
+      <div class="mt-6 rounded-lg bg-[#fdfbf7] p-4 ring-1 ring-[#e2d7c7]">
+        <pre class="mermaid">
+sequenceDiagram
+  participant UI as GameBoard
+  participant Hook as useGame
+  participant Act as actions
+  participant Eng as engine.effects
+
+  UI->>Hook: playAction(cardId)
+  Hook->>Act: playAction(state, cardId)
+  Act->>Eng: applyEffects(state, card.effects)
+  Eng-->>Act: pendingEffect or instant
+  Act-->>Hook: state mutated
+  Hook-->>UI: re-render
+        </pre>
+      </div>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold">4. ゲームエンジンと効果解決</h2>
+      <p class="mt-4 text-[#5b564e]">
+        <code>engine.ts</code> で初期デッキ生成とドロー処理を管理。
+        効果は <code>applyEffects</code> が即時効果と保留効果を振り分ける。
+      </p>
+
+      <div class="mt-6 grid md:grid-cols-2 gap-6">
+        <div class="rounded-lg bg-[#fdfbf7] p-4 ring-1 ring-[#e2d7c7]">
+          <h3 class="text-lg font-semibold mb-3">applyEffects（抜粋）</h3>
+          <pre><code class="language-ts">export function applyEffects(state: GameState, effects: EffectDef[]): void {
+  effects.forEach(effect =&gt; {
+    const pending = pendingRegistry[effect.kind as keyof typeof pendingRegistry];
+    if (pending) {
+      pending.init(state, effect);
+      return;
+    }
+    applyInstantEffect(state, effect);
+  });
+}</code></pre>
+        </div>
+        <div class="rounded-lg bg-[#fdfbf7] p-4 ring-1 ring-[#e2d7c7]">
+          <h3 class="text-lg font-semibold mb-3">保留効果の例</h3>
+          <p class="text-[#5b564e]">
+            <code>DiscardForDraw</code> / <code>TrashFromHand</code> は
+            UIパネルで選択し、<code>resolve*</code> で確定処理。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold">5. データ構造とカード定義</h2>
+      <p class="mt-4 text-[#5b564e]">
+        <code>types.ts</code> でカードと効果を型定義。
+        <code>cardData.ts</code> は基本セットのカードを並べ、
+        <code>supply.ts</code> が基本+王国の山札を作る。
+      </p>
+
+      <div class="mt-6 rounded-lg bg-[#fdfbf7] p-4 ring-1 ring-[#e2d7c7]">
+        <h3 class="text-lg font-semibold mb-3">EffectDef（抜粋）</h3>
+        <pre><code class="language-ts">export type EffectDef =
+  | { kind: "DrawCards"; amount: number }
+  | { kind: "AddActions"; amount: number }
+  | { kind: "AddBuys"; amount: number }
+  | { kind: "AddCoins"; amount: number }
+  | { kind: "GainCard"; maxCost: number; destination: "discard" | "hand" }
+  | { kind: "TrashCard"; amount: number; from: "hand" }
+  | { kind: "DiscardForDraw"; min?: number; max?: number}
+  | { kind: "TrashFromHand"; max: number;}
+  | { kind: "If"; condition: Condition; then: EffectDef[]; else?: EffectDef[] }
+  | { kind: "Repeat"; times?: number; until?: Condition; effect: EffectDef };</code></pre>
+      </div>
+
+      <div class="mt-6 rounded-lg bg-[#fdfbf7] p-4 ring-1 ring-[#e2d7c7]">
+        <pre class="mermaid">
+flowchart LR
+  A[cardData.ts] --> B[cardMaster list]
+  B --> C[createSupply]
+  C --> D[GameState.supply]
+        </pre>
+      </div>
+
+      <p class="mt-6 text-[#5b564e]">
+        例: 初期デッキ枚数は
+        <span class="bg-[#efe4d5] px-2 py-1 rounded">\(7 + 3 = 10\)</span>
+        枚（銅貨7 + 屋敷3）。
+      </p>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold">6. 既知の制約と改善余地</h2>
+      <ul class="mt-4 text-[#5b564e] space-y-2">
+        <li>効果: <code>InstantHandlers</code> は一部のみ実装（Draw/Add系）。<code>If/Repeat/TrashCard</code> などは未処理。</li>
+        <li>カード: <code>cardData.ts</code> に <code>id: 'vassal'</code> が重複、また <code>{coint:4}</code> の誤記あり。</li>
+        <li>サプライ: 山札の減少処理は購入/獲得で行われるが、終了条件や枯渇判定は未実装。</li>
+        <li>ゲーム進行: phaseは action/buy/cleanup だが、厳密な手順制約は簡易。</li>
+      </ul>
+    </section>
+
+    <footer class="mt-16 text-[#7a7268] text-sm">
+      Generated: 2026-03-02
+    </footer>
+  </main>
+</body>
+</html>

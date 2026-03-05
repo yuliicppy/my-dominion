@@ -23,6 +23,7 @@ export default function TopdeckFromDiscardPanel({
   const toggle = (idx: number) => {
     setSelection(prev => {
       if (prev.includes(idx)) return prev.filter(i => i !== idx);
+      // 上限を超える選択は受け付けない
       if (prev.length >= max) return prev;
       return [...prev, idx];
     });
