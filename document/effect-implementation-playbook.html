@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>カード効果実装プレイブック</title>
+  <style>
+    :root {
+      --bg: #f6f2ea;
+      --panel: #fffdf8;
+      --text: #2b2926;
+      --muted: #6a645b;
+      --line: #ddd2c2;
+      --accent: #9f6a2f;
+      --code: #f3ede2;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif;
+      background: radial-gradient(circle at top right, #efe5d6 0%, var(--bg) 45%);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 40px 20px 64px;
+    }
+
+    h1, h2, h3 {
+      line-height: 1.25;
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      margin-bottom: 12px;
+      border-left: 5px solid var(--accent);
+      padding-left: 10px;
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      margin-bottom: 8px;
+      color: var(--accent);
+    }
+
+    p {
+      margin: 0 0 12px;
+    }
+
+    .lead {
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    ol, ul {
+      margin: 0;
+      padding-left: 22px;
+    }
+
+    li {
+      margin-bottom: 7px;
+    }
+
+    code {
+      background: var(--code);
+      border-radius: 6px;
+      padding: 2px 6px;
+      font-family: "Fira Code", "Consolas", monospace;
+      font-size: 0.93rem;
+    }
+
+    pre {
+      background: #1f1d1a;
+      color: #f4efe6;
+      border-radius: 10px;
+      padding: 12px;
+      overflow-x: auto;
+      margin: 10px 0 0;
+      border: 1px solid #3a342d;
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      color: inherit;
+      font-size: 0.9rem;
+    }
+
+    .grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .file-list {
+      background: #fbf7ef;
+      border: 1px dashed var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      color: #463f36;
+    }
+
+    .footer {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>カード効果実装プレイブック</h1>
+      <p class="lead">目的: 「カード効果を1つ追加する時に、どのファイルへ何を入れるか」を毎回同じ順序で進めるための手順書。</p>
+    </header>
+
+    <section class="section">
+      <h2>0. 方針（先に決める）</h2>
+      <ul>
+        <li><code>kind</code> は処理内容だけを表す。</li>
+        <li>任意効果は <code>optional: true</code> のように別プロパティで表す。</li>
+        <li>即時解決できるなら <code>instantHandlers.ts</code>、ユーザー選択が必要なら <code>pending</code> で実装する。</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>1. 実装順序（毎回この順番）</h2>
+      <ol>
+        <li><code>src/game/types.ts</code> に <code>EffectDef</code> と <code>PendingEffect</code> を追加する。</li>
+        <li><code>src/game/cardData.ts</code> にカードの <code>effects</code> を追加する。</li>
+        <li><code>src/game/effects/instantHandlers.ts</code> にキーを追加する（pendingなら <code>undefined</code>）。</li>
+        <li><code>src/game/effects/pending/*</code> に <code>init/resolve</code> 実装を追加する。</li>
+        <li><code>src/game/effects/pending/index.ts</code> に registry 登録する。</li>
+        <li><code>src/hooks/actions/resolveXxx.ts</code> を追加し、<code>useGame.ts</code> に公開する。</li>
+        <li><code>src/components/pending/XxxPanel.tsx</code> を追加し、<code>PendingEffectPanel.tsx</code> に接続する。</li>
+        <li><code>src/components/GameBoard.tsx</code> から resolver を渡す。</li>
+      </ol>
+    </section>
+
+    <section class="section">
+      <h2>2. 追加対象ファイルの一覧テンプレ</h2>
+      <div class="file-list">
+        <div class="grid">
+          <code>src/game/types.ts</code>
+          <code>src/game/cardData.ts</code>
+          <code>src/game/effects/instantHandlers.ts</code>
+          <code>src/game/effects/pending/index.ts</code>
+          <code>src/game/effects/pending/Xxx.ts</code>
+          <code>src/hooks/actions/resolveXxx.ts</code>
+          <code>src/hooks/useGame.ts</code>
+          <code>src/components/pending/XxxPanel.tsx</code>
+          <code>src/components/pending/index.ts</code>
+          <code>src/components/PendingEffectPanel.tsx</code>
+          <code>src/components/GameBoard.tsx</code>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>3. 最小テンプレコード</h2>
+
+      <h3>3-1. types.ts</h3>
+      <pre><code class="language-ts">type EffectDef =
+  | { kind: "TopdeckFromDiscard"; max: number; optional?: boolean }
+  | ...;
+
+type PendingEffect =
+  | { kind: "TopdeckFromDiscard"; max: number; optional: boolean }
+  | ...;</code></pre>
+
+      <h3>3-2. pending 実装</h3>
+      <pre><code class="language-ts">export const topdeckFromDiscardPending = {
+  init(state, effect) {
+    if (effect.kind !== "TopdeckFromDiscard") return;
+    state.pendingEffect = {
+      kind: "TopdeckFromDiscard",
+      max: effect.max,
+      optional: effect.optional ?? false,
+    };
+  },
+  resolve(state, payload) {
+    if (!state.pendingEffect || state.pendingEffect.kind !== "TopdeckFromDiscard") return;
+    // payload を検証して state を更新
+    state.pendingEffect = null;
+  },
+};</code></pre>
+
+      <h3>3-3. useGame 公開</h3>
+      <pre><code class="language-ts">const resolveTopdeckFromDiscard = (payload: { indices: number[] }) =&gt;
+  update(state =&gt; resolveTopdeckFromDiscardAction(state, payload));
+
+const actions = {
+  ...,
+  resolveTopdeckFromDiscard,
+};</code></pre>
+    </section>
+
+    <section class="section">
+      <h2>4. 実装後チェック</h2>
+      <ul>
+        <li><code>npx tsc --noEmit</code> が通る。</li>
+        <li><code>PendingEffect['kind']</code> に対して <code>Record</code> のキー欠けがない。</li>
+        <li>新しい pending が UI から解決でき、解決後に <code>pendingEffect = null</code> へ戻る。</li>
+        <li>optional のときだけ「スキップ」導線を表示する。</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>5. 参考: 前駆者（Harbinger）で追加した effect</h2>
+      <pre><code class="language-ts">effects: [
+  { kind: "DrawCards", amount: 1 },
+  { kind: "AddActions", amount: 1 },
+  { kind: "TopdeckFromDiscard", max: 1, optional: true },
+]</code></pre>
+    </section>
+
+    <p class="footer">Last Updated: 2026-03-06 / document/effect-implementation-playbook.html</p>
+  </main>
+</body>
+</html>
